@@ -15,6 +15,7 @@ import PrivateRoute from './components/PrivateRoute/PrivateRoute';
 import theme from './theme';
 import './types';
 import { VideoProvider } from './components/VideoProvider';
+import { Callback } from './types';
 
 // See: https://media.twiliocdn.com/sdk/js/video/releases/2.0.0/docs/global.html#ConnectOptions
 // for available connection options.
@@ -52,9 +53,14 @@ if (isMobile && connectionOptions?.bandwidthProfile?.video) {
   connectionOptions!.bandwidthProfile!.video!.maxSubscriptionBitrate = 2500000;
 }
 
-const VideoApp = () => {
-  const { error, setError } = useAppState();
+interface Props {
+  onDisconnect?: Callback;
+  meeting?: string;
+  token?: string;
+}
 
+const VideoApp: React.SFC<Props> = props => {
+  const { error, setError } = useAppState();
   return (
     <VideoProvider options={connectionOptions} onError={setError}>
       <ErrorDialog dismissError={() => setError(null)} error={error} />
@@ -72,6 +78,9 @@ ReactDOM.render(
           <PrivateRoute exact path="/">
             <VideoApp />
           </PrivateRoute>
+          <Route path="/video">
+            <VideoApp />
+          </Route>
           <PrivateRoute path="/room/:URLRoomName">
             <VideoApp />
           </PrivateRoute>

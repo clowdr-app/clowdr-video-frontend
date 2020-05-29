@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme: Theme) =>
       background: 'black',
     },
     identity: {
-      background: 'rgba(0, 0, 0, 0.7)',
+      background: 'rgba(255,255,255, 0.7)',
       padding: '0.1em 0.3em',
       margin: 0,
       display: 'flex',
@@ -108,7 +108,7 @@ export default function ParticipantInfo({ participant, onClick, isSelected, chil
         <div className={classes.infoRow}>
           <h4 className={classes.identity}>
             <ParticipantConnectionIndicator participant={participant} />
-            {participant.identity}
+            {participant.identity.substring(1 + participant.identity.indexOf(':'))}
           </h4>
           <NetworkQualityLevel qualityLevel={networkQualityLevel} />
         </div>

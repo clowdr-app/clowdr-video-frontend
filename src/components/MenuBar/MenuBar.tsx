@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, useState, useEffect } from 'react';
+import React, { ChangeEvent, FormEvent, useState, useEffect, Component, Dispatch, SetStateAction } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import AppBar from '@material-ui/core/AppBar';
@@ -16,6 +16,7 @@ import useVideoContext from '../../hooks/useVideoContext/useVideoContext';
 import { Typography } from '@material-ui/core';
 import FlipCameraButton from './FlipCameraButton/FlipCameraButton';
 import { DeviceSelector } from './DeviceSelector/DeviceSelector';
+import { IVideoContext } from '../VideoProvider';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -58,12 +59,51 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
+class ConnectBridge extends Component<
+  { videoContext: IVideoContext; setRoomName: Dispatch<SetStateAction<string>> },
+  {}
+> {
+  componentWillUnmount(): void {
+    if (this.props.videoContext.room && this.props.videoContext.room.disconnect) {
+      // Detach the local media elements
+      let room = this.props.videoContext.room;
+      room.localParticipant.tracks.forEach(publication => {
+        console.log(publication.track.kind);
+        switch (publication.track.kind) {
+          case 'video':
+            publication.track.stop();
+            const attachedElements1 = publication.track.detach();
+            attachedElements1.forEach(element => element.remove());
+            break;
+          case 'audio':
+            const attachedElements2 = publication.track.detach();
+            attachedElements2.forEach(element => element.remove());
+            break;
+          default:
+            console.log(publication.track.kind);
+        }
+        publication.unpublish();
+        room.localParticipant.unpublishTrack(publication.track);
+      });
+      if (room.localParticipant.state === 'connected') {
+        room.disconnect();
+      }
+      this.props.videoContext.localTracks.forEach(track => {
+        track.stop();
+      });
+    }
+  }
 
+  render() {
+    return <span></span>;
+  }
+}
 export default function MenuBar() {
   const classes = useStyles();
   const { URLRoomName } = useParams();
-  const { user, getToken, isFetching } = useAppState();
-  const { isConnecting, connect } = useVideoContext();
+  const { user, getToken, isFetching, meeting, token } = useAppState();
+  const fullVideoContext = useVideoContext();
+  const { isConnecting, connect } = fullVideoContext;
   const roomState = useRoomState();
 
   const [name, setName] = useState<string>(user?.displayName || '');
@@ -92,6 +132,22 @@ export default function MenuBar() {
     getToken(name, roomName).then(token => connect(token));
   };
 
+  if (meeting && token)
+    return (
+      <AppBar className={classes.container} position="static">
+        <ConnectBridge videoContext={fullVideoContext} setRoomName={setRoomName} />
+
+        <Toolbar className={classes.toolbar}>
+          {roomState === 'disconnected' ? <h3>Connecting...</h3> : <h3>Breakout Topic: {meeting}</h3>}
+          <div className={classes.rightButtonContainer}>
+            <FlipCameraButton />
+            <DeviceSelector />
+            <ToggleFullscreenButton />
+            <Menu />
+          </div>
+        </Toolbar>
+      </AppBar>
+    );
   return (
     <AppBar className={classes.container} position="static">
       <Toolbar className={classes.toolbar}>

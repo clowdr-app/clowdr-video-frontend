@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, SyntheticEvent } from 'react';
 import { IVideoTrack } from '../../types';
 import { styled } from '@material-ui/core/styles';
 import { Track } from 'twilio-video';
@@ -13,9 +13,10 @@ interface VideoTrackProps {
   track: IVideoTrack;
   isLocal?: boolean;
   priority?: Track.Priority | null;
+  onLoad?: (event: SyntheticEvent) => void;
 }
 
-export default function VideoTrack({ track, isLocal, priority }: VideoTrackProps) {
+export default function VideoTrack({ track, isLocal, priority, onLoad }: VideoTrackProps) {
   const ref = useRef<HTMLVideoElement>(null!);
 
   useEffect(() => {
@@ -38,5 +39,5 @@ export default function VideoTrack({ track, isLocal, priority }: VideoTrackProps
   const isFrontFacing = track.mediaStreamTrack.getSettings().facingMode !== 'environment';
   const style = isLocal && isFrontFacing ? { transform: 'rotateY(180deg)' } : {};
 
-  return <Video ref={ref} style={style} />;
+  return <Video ref={ref} style={style} onCanPlay={onLoad} />;
 }

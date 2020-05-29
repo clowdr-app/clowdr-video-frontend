@@ -3,6 +3,7 @@ import { TwilioError } from 'twilio-video';
 import useFirebaseAuth from './useFirebaseAuth/useFirebaseAuth';
 import usePasscodeAuth from './usePasscodeAuth/usePasscodeAuth';
 import { User } from 'firebase';
+import { useLocation } from 'react-router-dom';
 
 export interface StateContextType {
   error: TwilioError | null;
@@ -15,9 +16,19 @@ export interface StateContextType {
   isFetching: boolean;
   activeSinkId: string;
   setActiveSinkId(sinkId: string): void;
+  meeting?: string;
+  token?: string;
 }
 
 export const StateContext = createContext<StateContextType>(null!);
+
+export interface AppStateProvider {
+  meeting?: string;
+  token?: string;
+}
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 /*
   The 'react-hooks/rules-of-hooks' linting rules prevent React Hooks fron being called
@@ -28,7 +39,7 @@ export const StateContext = createContext<StateContextType>(null!);
   included in the bundle that is produced (due to tree-shaking). Thus, in this instance, it
   is ok to call hooks inside if() statements.
 */
-export default function AppStateProvider(props: React.PropsWithChildren<{}>) {
+export default function AppStateProvider(props: React.PropsWithChildren<AppStateProvider>) {
   const [error, setError] = useState<TwilioError | null>(null);
   const [isFetching, setIsFetching] = useState(false);
   const [activeSinkId, setActiveSinkId] = useState('default');
@@ -41,6 +52,16 @@ export default function AppStateProvider(props: React.PropsWithChildren<{}>) {
     setActiveSinkId,
   } as StateContextType;
 
+  const query = useQuery();
+  let roomId = query.get('roomId');
+  let token = query.get('token');
+  if (roomId && token) {
+    contextValue = {
+      ...contextValue,
+      meeting: roomId,
+      token: token,
+    };
+  }
   if (process.env.REACT_APP_SET_AUTH === 'firebase') {
     contextValue = {
       ...contextValue,

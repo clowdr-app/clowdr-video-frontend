@@ -17,10 +17,18 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function EndCallButton() {
   const classes = useStyles();
-  const { room } = useVideoContext();
+  const { room, onDisconnect } = useVideoContext();
 
   return (
-    <Tooltip title={'End Call'} onClick={() => room.disconnect()} placement="top" PopperProps={{ disablePortal: true }}>
+    <Tooltip
+      title={'End Call'}
+      onClick={() => {
+        room.disconnect();
+        onDisconnect();
+      }}
+      placement="top"
+      PopperProps={{ disablePortal: true }}
+    >
       <Fab className={classes.fab} color="primary">
         <CallEnd />
       </Fab>
