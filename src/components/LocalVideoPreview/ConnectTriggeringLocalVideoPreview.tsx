@@ -7,9 +7,21 @@ import { StateContext, StateContextType } from '../../state';
 class LocalVideoPreview extends React.Component<{ stateContext: StateContextType; videoContext: IVideoContext }> {
   componentDidMount(): void {}
 
+  async getTokenForToken(token: string) {
+    const headers = new window.Headers();
+    const endpoint = process.env.REACT_APP_TOKEN_ENDPOINT || '/token';
+    const params = new window.URLSearchParams({ token });
+
+    console.log(endpoint);
+    return fetch(`${endpoint}?${params}`, { headers }).then(res => {
+      return res.text();
+    });
+  }
+
   doConnect() {
     if (this.props.videoContext.isConnecting || !this.props.stateContext.token) return;
     this.props.videoContext.isConnecting = true;
+
     this.props.videoContext.connect(this.props.stateContext.token).then(room => {
       console.log('Installing disconnect handler');
       this.props.videoContext.room.on('disconnected', room => {

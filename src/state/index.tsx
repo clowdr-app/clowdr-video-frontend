@@ -18,6 +18,7 @@ export interface StateContextType {
   setActiveSinkId(sinkId: string): void;
   meeting?: string;
   token?: string;
+  isEmbedded?: boolean;
 }
 
 export const StateContext = createContext<StateContextType>(null!);
@@ -25,6 +26,7 @@ export const StateContext = createContext<StateContextType>(null!);
 export interface AppStateProvider {
   meeting?: string;
   token?: string;
+  isEmbedded?: boolean;
 }
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -52,6 +54,19 @@ export default function AppStateProvider(props: React.PropsWithChildren<AppState
     setActiveSinkId,
   } as StateContextType;
 
+  if (props.isEmbedded) {
+    contextValue = {
+      ...contextValue,
+      isEmbedded: props.isEmbedded,
+    };
+  }
+  if (props.token && props.meeting) {
+    contextValue = {
+      ...contextValue,
+      meeting: props.meeting,
+      token: props.token, //TODO test this; when we have this meeting name set, never show the login/join room option
+    };
+  }
   const query = useQuery();
   let roomId = query.get('roomId');
   let token = query.get('token');

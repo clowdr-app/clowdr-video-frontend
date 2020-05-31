@@ -101,7 +101,7 @@ class ConnectBridge extends Component<
 export default function MenuBar() {
   const classes = useStyles();
   const { URLRoomName } = useParams();
-  const { user, getToken, isFetching, meeting, token } = useAppState();
+  const { user, getToken, isFetching, meeting, token, isEmbedded } = useAppState();
   const fullVideoContext = useVideoContext();
   const { isConnecting, connect } = fullVideoContext;
   const roomState = useRoomState();
@@ -132,7 +132,7 @@ export default function MenuBar() {
     getToken(name, roomName).then(token => connect(token));
   };
 
-  if (meeting && token)
+  if (token || isEmbedded)
     return (
       <AppBar className={classes.container} position="static">
         <ConnectBridge videoContext={fullVideoContext} setRoomName={setRoomName} />
