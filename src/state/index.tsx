@@ -4,6 +4,7 @@ import useFirebaseAuth from './useFirebaseAuth/useFirebaseAuth';
 import usePasscodeAuth from './usePasscodeAuth/usePasscodeAuth';
 import { User } from 'firebase';
 import { useLocation } from 'react-router-dom';
+import { Callback } from '../types';
 
 export interface StateContextType {
   error: TwilioError | null;
@@ -19,6 +20,7 @@ export interface StateContextType {
   meeting?: string;
   token?: string;
   isEmbedded?: boolean;
+  onDisconnect?: Callback;
 }
 
 export const StateContext = createContext<StateContextType>(null!);
@@ -27,6 +29,7 @@ export interface AppStateProvider {
   meeting?: string;
   token?: string;
   isEmbedded?: boolean;
+  onDisconnect?: Callback;
 }
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -60,11 +63,17 @@ export default function AppStateProvider(props: React.PropsWithChildren<AppState
       isEmbedded: props.isEmbedded,
     };
   }
+  if (props.onDisconnect) {
+    contextValue = {
+      ...contextValue,
+      onDisconnect: props.onDisconnect,
+    };
+  }
   if (props.token && props.meeting) {
     contextValue = {
       ...contextValue,
       meeting: props.meeting,
-      token: props.token, //TODO test this; when we have this meeting name set, never show the login/join room option
+      token: props.token,
     };
   }
   const query = useQuery();

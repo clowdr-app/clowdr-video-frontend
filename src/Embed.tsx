@@ -54,9 +54,9 @@ interface Props {
 }
 
 const VideoApp: React.SFC<Props> = props => {
-  const { error, setError } = useAppState();
+  const { error, setError, onDisconnect } = useAppState();
   return (
-    <VideoProvider options={connectionOptions} onError={setError}>
+    <VideoProvider options={connectionOptions} onError={setError} onDisconnect={onDisconnect}>
       <ErrorDialog dismissError={() => setError(null)} error={error} />
       <App />
     </VideoProvider>
