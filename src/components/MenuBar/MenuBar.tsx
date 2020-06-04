@@ -131,12 +131,10 @@ export default function MenuBar() {
     }
     getToken(name, roomName).then(token => connect(token));
   };
-
-  if (token || isEmbedded)
+  if (isEmbedded) return <ConnectBridge videoContext={fullVideoContext} setRoomName={setRoomName} />;
+  if (token)
     return (
       <AppBar className={classes.container} position="static">
-        <ConnectBridge videoContext={fullVideoContext} setRoomName={setRoomName} />
-
         <Toolbar className={classes.toolbar}>
           {roomState === 'disconnected' ? <h3>Connecting...</h3> : <h3>Breakout Topic: {meeting}</h3>}
           <div className={classes.rightButtonContainer}>
