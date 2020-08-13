@@ -21,6 +21,7 @@ export interface StateContextType {
   token?: string;
   isEmbedded?: boolean;
   onDisconnect?: Callback;
+  onConnect?: Callback;
 }
 
 export const StateContext = createContext<StateContextType>(null!);
@@ -30,6 +31,7 @@ export interface AppStateProvider {
   token?: string;
   isEmbedded?: boolean;
   onDisconnect?: Callback;
+  onConnect?: Callback;
 }
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -61,6 +63,12 @@ export default function AppStateProvider(props: React.PropsWithChildren<AppState
     contextValue = {
       ...contextValue,
       isEmbedded: props.isEmbedded,
+    };
+  }
+  if (props.onConnect) {
+    contextValue = {
+      ...contextValue,
+      onConnect: props.onConnect,
     };
   }
   if (props.onDisconnect) {

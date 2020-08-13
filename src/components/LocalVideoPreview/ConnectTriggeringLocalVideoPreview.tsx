@@ -1,5 +1,5 @@
 import React from 'react';
-import { LocalVideoTrack, LocalVideoTrackPublication } from 'twilio-video';
+import { LocalAudioTrack, LocalVideoTrack, LocalVideoTrackPublication } from 'twilio-video';
 import VideoTrack from '../VideoTrack/VideoTrack';
 import { IVideoContext, VideoContext } from '../VideoProvider';
 import { StateContext, StateContextType } from '../../state';
@@ -22,16 +22,21 @@ class LocalVideoPreview extends React.Component<{ stateContext: StateContextType
     if (this.props.videoContext.isConnecting || !this.props.stateContext.token) return;
     this.props.videoContext.isConnecting = true;
 
-    this.props.videoContext.connect(this.props.stateContext.token).then(room => {
-      console.log('Installing disconnect handler');
-      this.props.videoContext.room.on('disconnected', room => {
-        console.log('Disconnected.');
-        room.localParticipant.tracks.forEach((publication: LocalVideoTrackPublication) => {
-          const attachedElements = publication.track.detach();
-          attachedElements.forEach(element => element.remove());
+    this.props.videoContext
+      .connect(this.props.stateContext.token)
+      .then(room => {
+        if (this.props.stateContext.onConnect) {
+          this.props.stateContext.onConnect(room);
+        }
+        this.props.videoContext.room.on('disconnected', room => {
+          console.log('Disconnected.');
+          room.localParticipant.tracks.forEach((publication: LocalVideoTrackPublication) => {
+            const attachedElements = publication.track.detach();
+            attachedElements.forEach(element => element.remove());
+          });
         });
-      });
-    });
+      })
+      .catch(err => this.props.videoContext.onError);
   }
   render():
     | React.ReactElement<any, string | React.JSXElementConstructor<any>>

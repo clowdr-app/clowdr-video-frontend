@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { ensureMediaPermissions } from '../../../utils';
 import Video, { LocalVideoTrack, LocalAudioTrack, CreateLocalTrackOptions } from 'twilio-video';
+import { Simulate } from 'react-dom/test-utils';
 
-export function useLocalAudioTrack() {
+export function useLocalAudioTrack(errorHandler?: (err: any) => {}) {
   const [track, setTrack] = useState<LocalAudioTrack>();
 
   const getLocalAudioTrack = useCallback((deviceId?: string) => {
@@ -13,12 +14,17 @@ export function useLocalAudioTrack() {
       options.deviceId = { exact: deviceId };
     }
 
-    return ensureMediaPermissions().then(() =>
-      Video.createLocalAudioTrack(options).then(newTrack => {
-        setTrack(newTrack);
-        return newTrack;
-      })
-    );
+    return ensureMediaPermissions()
+      .then(() =>
+        Video.createLocalAudioTrack(options).then(newTrack => {
+          setTrack(newTrack);
+          return newTrack;
+        })
+      )
+      .catch(err => {
+        if (errorHandler) errorHandler(err);
+        throw err;
+      });
   }, []);
 
   useEffect(() => {
@@ -38,7 +44,7 @@ export function useLocalAudioTrack() {
   return [track, getLocalAudioTrack] as const;
 }
 
-export function useLocalVideoTrack() {
+export function useLocalVideoTrack(errorHandler?: (err: any) => {}) {
   const [track, setTrack] = useState<LocalVideoTrack>();
 
   const getLocalVideoTrack = useCallback((newOptions?: CreateLocalTrackOptions) => {
@@ -49,18 +55,24 @@ export function useLocalVideoTrack() {
     // conflict.
     const options: CreateLocalTrackOptions = {
       frameRate: 24,
-      height: 720,
-      width: 1280,
+      height: 480,
+      width: 640,
       name: `camera-${Date.now()}`,
       ...newOptions,
     };
 
-    return ensureMediaPermissions().then(() =>
-      Video.createLocalVideoTrack(options).then(newTrack => {
-        setTrack(newTrack);
-        return newTrack;
-      })
-    );
+    return ensureMediaPermissions()
+      .then(() =>
+        Video.createLocalVideoTrack(options).then(newTrack => {
+          setTrack(newTrack);
+          return newTrack;
+        })
+      )
+      .catch(err => {
+        if (errorHandler) errorHandler(err);
+        console.log(err);
+        throw err;
+      });
   }, []);
 
   useEffect(() => {
@@ -81,9 +93,9 @@ export function useLocalVideoTrack() {
   return [track, getLocalVideoTrack] as const;
 }
 
-export default function useLocalTracks() {
-  const [audioTrack, getLocalAudioTrack] = useLocalAudioTrack();
-  const [videoTrack, getLocalVideoTrack] = useLocalVideoTrack();
+export default function useLocalTracks(errorHandler?: (err: any) => {}) {
+  const [audioTrack, getLocalAudioTrack] = useLocalAudioTrack(errorHandler);
+  const [videoTrack, getLocalVideoTrack] = useLocalVideoTrack(errorHandler);
 
   const localTracks = [audioTrack, videoTrack].filter(track => track !== undefined) as (
     | LocalAudioTrack

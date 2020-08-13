@@ -62,7 +62,13 @@ interface Props {
 const VideoApp: React.SFC<Props> = props => {
   const { error, setError } = useAppState();
   return (
-    <VideoProvider options={connectionOptions} onError={setError}>
+    <VideoProvider
+      options={connectionOptions}
+      onError={err => {
+        console.log('Error!');
+        console.log(err);
+      }}
+    >
       <ErrorDialog dismissError={() => setError(null)} error={error} />
       <App />
     </VideoProvider>
